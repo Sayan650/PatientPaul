@@ -140,7 +140,12 @@ export default function PatientDetailView({ patient: initialPatient }: PatientDe
         <CardContent>
           {patient.prescriptions.length > 0 ? (
             patient.prescriptions.map((p) => (
-              <PrescriptionListItem key={p.id} prescription={p} onDelete={handleDeletePrescription} />
+              <PrescriptionListItem 
+                key={p.id} 
+                prescription={p} 
+                patientName={patient.name} 
+                onDelete={handleDeletePrescription} 
+              />
             ))
           ) : (
             <p className="text-muted-foreground">No prescriptions recorded for this patient.</p>
@@ -188,4 +193,3 @@ export default function PatientDetailView({ patient: initialPatient }: PatientDe
     </div>
   );
 }
-
