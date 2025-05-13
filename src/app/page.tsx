@@ -8,7 +8,7 @@ export default function DashboardPage() {
   return (
     <div className="container mx-auto py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Welcome to PatientPal</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Welcome to PatientPaul</h1>
         <p className="text-muted-foreground">Your centralized hub for patient management.</p>
       </div>
 

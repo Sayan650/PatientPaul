@@ -25,7 +25,7 @@ export default function AppSidebar() {
       <SidebarHeader className="border-b">
         <Link href="/" className="flex items-center gap-2 text-lg font-semibold md:text-xl p-2">
           <Stethoscope className="h-7 w-7 text-primary" />
-          <span className="group-data-[collapsible=icon]:hidden">PatientPal</span>
+          <span className="group-data-[collapsible=icon]:hidden">PatientPaul</span>
         </Link>
       </SidebarHeader>
       <SidebarContent>

@@ -12,7 +12,7 @@ export default function AppHeader() {
       </div>
       <Link href="/" className="flex items-center gap-2 text-lg font-semibold md:text-xl">
         <Stethoscope className="h-6 w-6 text-primary" /> 
-        <span>PatientPal</span>
+        <span>PatientPaul</span>
       </Link>
       {/* Add UserMenu or other header items here if needed */}
     </header>

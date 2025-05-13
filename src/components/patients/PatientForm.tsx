@@ -16,8 +16,9 @@ const patientSchema = z.object({
   age: z.coerce.number().int().nonnegative("Age must be a non-negative number.").max(150, "Age seems too high."),
   contactDetails: z.object({
     phone: z.string().min(10, "Phone number must be at least 10 digits"),
-    email: z.string().email("Invalid email address"),
   }),
+  sex: z.string().min(1, "Sex is required"),
+  occu: z.string().min(1, "Occupation is required"),
   medicalHistory: z.string().optional(),
 });
 
@@ -38,7 +39,9 @@ export default function PatientForm({ patient, onSubmit, isSubmitting }: Patient
     } : {
       name: '',
       age: 0,
-      contactDetails: { phone: '', email: '' },
+      contactDetails: { phone: '' },
+      sex: '',
+      occu: '',
       medicalHistory: '',
     },
   });
@@ -79,8 +82,8 @@ export default function PatientForm({ patient, onSubmit, isSubmitting }: Patient
                 <FormItem>
                   <FormLabel>Age</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="e.g. 35" {...field} 
-                      onChange={event => field.onChange(+event.target.value)} // Ensure value is number
+                    <Input type="number" placeholder="e.g. 35" {...field}
+                      // onChange={event => field.onChange(+event.target.value)} // Ensure value is number
                     />
                   </FormControl>
                   <FormMessage />
@@ -104,12 +107,26 @@ export default function PatientForm({ patient, onSubmit, isSubmitting }: Patient
 
             <FormField
               control={form.control}
-              name="contactDetails.email"
+              name="sex"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email Address</FormLabel>
+                  <FormLabel>Sex</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="e.g. john.doe@example.com" {...field} />
+                    <Input placeholder="male/female" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="occu"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Occupation</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Farmer ... etc." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -131,7 +148,7 @@ export default function PatientForm({ patient, onSubmit, isSubmitting }: Patient
             />
 
             <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={isSubmitting}>
-              {isSubmitting ? (patient ? 'Updating...' : 'Adding...' ): (patient ? 'Update Patient' : 'Add Patient')}
+              {isSubmitting ? (patient ? 'Updating...' : 'Adding...') : (patient ? 'Update Patient' : 'Add Patient')}
             </Button>
           </form>
         </Form>
