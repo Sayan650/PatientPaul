@@ -46,43 +46,43 @@
   }
 
   .dark {
-    --background: 0 0% 10%; /* Dark background */
+    --background: 220 10% 10%; /* Slightly cool dark background */
     --foreground: 0 0% 95%; /* Light text */
 
-    --card: 0 0% 15%;
+    --card: 220 10% 15%; /* Slightly cool dark card */
     --card-foreground: 0 0% 95%;
 
-    --popover: 0 0% 15%;
+    --popover: 220 10% 15%;
     --popover-foreground: 0 0% 95%;
 
-    --primary: 174 100% 35%; /* Darker Teal */
-    --primary-foreground: 0 0% 98%;
+    --primary: 210 90% 55%;  /* A strong blue, good for primary buttons */
+    --primary-foreground: 210 25% 95%; /* White/very light blue text on primary */
     
-    --secondary: 200 80% 30%; /* Darker Soft Blue */
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 220 10% 25%; /* Darker grey */
+    --secondary-foreground: 0 0% 80%; /* Lighter grey text */
 
-    --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 220 10% 20%; /* Muted grey */
+    --muted-foreground: 0 0% 60%; /* Medium grey for muted text */
 
-    --accent: 200 92% 75%; /* Lighter Soft Blue for dark mode accent */
-    --accent-foreground: 200 50% 20%;
+    --accent: 210 100% 50%; /* Vibrant Blue */
+    --accent-foreground: 210 100% 95%; /* Almost white text on accent */
 
-    --destructive: 0 70% 50%;
+    --destructive: 0 70% 50%; /* Standard red */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 25%;
-    --input: 0 0% 25%;
-    --ring: 174 100% 35%;
+    --border: 220 10% 30%; /* Cool dark border */
+    --input: 220 10% 30%; /* Cool dark input background */
+    --ring: 210 100% 50%; /* Blue for focus rings, matching accent */
 
-    /* Dark Sidebar specific colors */
-    --sidebar-background: 0 0% 12%; 
+    /* Dark Sidebar specific colors, aligned with blue accent */
+    --sidebar-background: 220 10% 8%;  /* Even darker cool background for sidebar */
     --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 174 100% 40%; 
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 200 80% 35%;
+    --sidebar-primary: 210 100% 50%; /* Active/hover elements in sidebar use accent blue */
+    --sidebar-primary-foreground: 210 100% 95%;
+    --sidebar-accent: 210 80% 35%; /* Hover for non-active items, a dimmer blue */
     --sidebar-accent-foreground: 0 0% 95%;
-    --sidebar-border: 0 0% 22%;
-    --sidebar-ring: 174 100% 40%;
+    --sidebar-border: 220 10% 20%;
+    --sidebar-ring: 210 100% 50%; /* Sidebar ring matches accent blue */
   }
 }
 
