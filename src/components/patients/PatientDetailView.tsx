@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Patient, Prescription, Appointment } from '@/lib/types';
@@ -11,9 +12,8 @@ import PrescriptionForm, { type PrescriptionFormData } from '@/components/prescr
 import PrescriptionListItem from '@/components/prescriptions/PrescriptionListItem';
 import AppointmentForm, { type AppointmentFormData } from '@/components/appointments/AppointmentForm';
 import AppointmentListItem from '@/components/appointments/AppointmentListItem';
-import { User, Phone, Mail, CalendarDays, ClipboardList, CalendarPlus, PlusCircle, Edit } from 'lucide-react';
-import { format, differenceInYears } from 'date-fns';
-import Link from 'next/link';
+import { User, Phone, Mail, ClipboardList, CalendarPlus, PlusCircle } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface PatientDetailViewProps {
   patient: Patient;
@@ -21,7 +21,6 @@ interface PatientDetailViewProps {
 
 export default function PatientDetailView({ patient: initialPatient }: PatientDetailViewProps) {
   const { getPatientById, addPrescription, addAppointment, deletePrescription, deleteAppointment } = usePatientStore();
-  // Use patient from store to ensure it's always up-to-date after modifications
   const patient = getPatientById(initialPatient.id) || initialPatient;
   
   const { toast } = useToast();
@@ -77,8 +76,6 @@ export default function PatientDetailView({ patient: initialPatient }: PatientDe
     });
   };
 
-  const age = differenceInYears(new Date(), new Date(patient.dateOfBirth));
-
   return (
     <div className="space-y-8">
       <Card className="shadow-xl">
@@ -94,7 +91,7 @@ export default function PatientDetailView({ patient: initialPatient }: PatientDe
             </Link> */}
           </div>
           <CardDescription className="text-md">
-            {age} years old (DOB: {format(new Date(patient.dateOfBirth), 'MMMM d, yyyy')})
+            {patient.age} years old
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -191,3 +188,4 @@ export default function PatientDetailView({ patient: initialPatient }: PatientDe
     </div>
   );
 }
+

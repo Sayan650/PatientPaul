@@ -1,6 +1,7 @@
+
 "use client";
 
-import PatientForm from '@/components/patients/PatientForm';
+import PatientForm, { type PatientFormData } from '@/components/patients/PatientForm';
 import { usePatientStore } from '@/lib/store';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -13,14 +14,12 @@ export default function NewPatientPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (data: Omit<Patient, 'id' | 'prescriptions' | 'appointments' | 'dateOfBirth'> & {dateOfBirth: Date}) => {
+  const handleSubmit = async (data: PatientFormData) => {
     setIsSubmitting(true);
     try {
-      const patientDataForStore = {
-        ...data,
-        dateOfBirth: data.dateOfBirth.toISOString(), // Convert Date to ISO string
-      };
-      const newPatient = addPatient(patientDataForStore);
+      // Type PatientFormData already matches Omit<Patient, 'id' | 'prescriptions' | 'appointments'>
+      // as 'age' is now part of Patient type and PatientFormData
+      const newPatient = addPatient(data);
       toast({
         title: "Patient Added",
         description: `${newPatient.name} has been successfully registered.`,
@@ -42,3 +41,4 @@ export default function NewPatientPage() {
     </div>
   );
 }
+

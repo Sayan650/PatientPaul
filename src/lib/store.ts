@@ -1,7 +1,9 @@
+
 "use client";
 
 import type { Patient, Prescription, Appointment } from './types';
 import { useState, useEffect, useCallback } from 'react';
+import { differenceInYears } from 'date-fns';
 
 const STORE_KEY = 'patientPalData';
 
@@ -28,8 +30,23 @@ function loadState(): AppState {
       return initialAppState;
     }
     const storedState = JSON.parse(serializedState);
-    // Basic validation to ensure structure matches
+    
     if (storedState && Array.isArray(storedState.patients)) {
+      // Migration logic: convert dateOfBirth to age if age is missing
+      storedState.patients = storedState.patients.map((p: any) => {
+        if (p.dateOfBirth && typeof p.age === 'undefined') {
+          try {
+            p.age = differenceInYears(new Date(), new Date(p.dateOfBirth));
+          } catch (e) {
+            console.warn("Error converting dateOfBirth to age for patient:", p.id, e);
+            p.age = 0; // Default age if conversion fails
+          }
+          delete p.dateOfBirth; // Remove old field
+        } else if (typeof p.age === 'undefined') {
+          p.age = 0; // Default age if both are missing
+        }
+        return p as Patient;
+      });
        return storedState;
     }
     return initialAppState;
@@ -59,7 +76,6 @@ export function usePatientStore() {
   const [state, setState] = useState<AppState>(memoryState);
 
   useEffect(() => {
-    // Sync with memoryState when component mounts or memoryState changes externally
     const handleStorageChange = () => {
         const newState = loadState();
         memoryState = newState;
@@ -67,14 +83,11 @@ export function usePatientStore() {
         notifyListeners();
     }
     
-    // Component specific listener
     const listener = () => setState({...memoryState});
     listeners.add(listener);
 
-    // Listen for changes from other tabs/windows
     window.addEventListener('storage', handleStorageChange);
     
-    // Initial sync
     setState(memoryState);
 
     return () => {
@@ -171,3 +184,4 @@ export function usePatientStore() {
     deleteAppointment,
   };
 }
+

@@ -18,7 +18,7 @@ export interface Appointment {
 export interface Patient {
   id: string;
   name: string;
-  dateOfBirth: string; // Store as ISO string
+  age: number; 
   contactDetails: {
     phone: string;
     email: string;
@@ -27,3 +27,4 @@ export interface Patient {
   prescriptions: Prescription[];
   appointments: Appointment[];
 }
+

@@ -1,11 +1,11 @@
+
 "use client";
 
 import type { Patient } from '@/lib/types';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Phone, Mail, CalendarDays, Trash2, Edit3 } from 'lucide-react';
-import { format, differenceInYears } from 'date-fns';
+import { User, Phone, Mail, Trash2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,8 +24,6 @@ interface PatientListItemProps {
 }
 
 export default function PatientListItem({ patient, onDelete }: PatientListItemProps) {
-  const age = differenceInYears(new Date(), new Date(patient.dateOfBirth));
-
   return (
     <Card className="shadow-md hover:shadow-lg transition-shadow">
       <CardHeader>
@@ -34,7 +32,7 @@ export default function PatientListItem({ patient, onDelete }: PatientListItemPr
             <CardTitle className="flex items-center gap-2 text-xl text-foreground">
               <User className="text-accent" /> {patient.name}
             </CardTitle>
-            <CardDescription>{age} years old</CardDescription>
+            <CardDescription>{patient.age} years old</CardDescription>
           </div>
            <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -68,10 +66,6 @@ export default function PatientListItem({ patient, onDelete }: PatientListItemPr
           <Phone className="h-4 w-4" />
           <span>{patient.contactDetails.phone}</span>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <CalendarDays className="h-4 w-4" />
-          <span>DOB: {format(new Date(patient.dateOfBirth), 'MMMM d, yyyy')}</span>
-        </div>
       </CardContent>
       <CardFooter className="flex justify-end gap-2">
          {/* Edit button could navigate to an edit page or open a modal form */}
@@ -87,3 +81,4 @@ export default function PatientListItem({ patient, onDelete }: PatientListItemPr
     </Card>
   );
 }
+
