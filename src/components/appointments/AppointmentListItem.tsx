@@ -1,9 +1,10 @@
+
 "use client";
 
-import type { Appointment } from '@/lib/types';
+import type { Appointment } from '@prisma/client'; // Use Prisma type
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CalendarClock, Edit, Trash2 } from 'lucide-react';
+import { CalendarClock, Trash2 } from 'lucide-react'; // Edit icon removed for now
 import { format } from 'date-fns';
 import { Button } from '../ui/button';
 import {
@@ -19,25 +20,28 @@ import {
 } from "@/components/ui/alert-dialog";
 
 interface AppointmentListItemProps {
-  appointment: Appointment;
-  onDelete: (appointmentId: string) => void;
-  // onEdit: (appointment: Appointment) => void; // For future edit functionality
+  appointment: Appointment; // Prisma type
+  onDelete: (appointmentId: string) => Promise<void>; // Expects to call a server action
 }
 
 export default function AppointmentListItem({ appointment, onDelete }: AppointmentListItemProps) {
   const getStatusVariant = (status: Appointment['status']): "default" | "secondary" | "destructive" | "outline" => {
     switch (status) {
       case 'upcoming':
-        return 'default'; // Blue or primary
+        return 'default';
       case 'completed':
-        return 'secondary'; // Green or success
+        return 'secondary';
       case 'cancelled':
-        return 'destructive'; // Red or error
+        return 'destructive';
       default:
         return 'outline';
     }
   };
   
+  const handleDelete = async () => {
+    await onDelete(appointment.id);
+  };
+
   return (
     <Card className="mb-4 shadow-sm">
       <CardHeader className="pb-3">
@@ -47,9 +51,6 @@ export default function AppointmentListItem({ appointment, onDelete }: Appointme
             Appointment
           </CardTitle>
           <div className="flex gap-1">
-            {/* <Button variant="ghost" size="icon" onClick={() => onEdit(appointment)} className="text-blue-600 hover:text-blue-500">
-                <Edit className="h-4 w-4" />
-            </Button> */}
             <AlertDialog>
                 <AlertDialogTrigger asChild>
                 <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80">
@@ -65,7 +66,7 @@ export default function AppointmentListItem({ appointment, onDelete }: Appointme
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => onDelete(appointment.id)} className="bg-destructive hover:bg-destructive/90">
+                    <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
                     Delete
                     </AlertDialogAction>
                 </AlertDialogFooter>

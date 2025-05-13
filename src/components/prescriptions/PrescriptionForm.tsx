@@ -1,6 +1,7 @@
+
 "use client";
 
-import type { Prescription } from '@/lib/types';
+import type { Prescription } from '@prisma/client'; // Use Prisma type
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -24,8 +25,8 @@ const prescriptionSchema = z.object({
 export type PrescriptionFormData = z.infer<typeof prescriptionSchema>;
 
 interface PrescriptionFormProps {
-  prescription?: Prescription;
-  onSubmit: (data: PrescriptionFormData) => void;
+  prescription?: Prescription; // Prisma type
+  onSubmit: (data: PrescriptionFormData) => Promise<void>; // Expects to call a server action
   onCancel?: () => void;
   isSubmitting?: boolean;
 }
@@ -34,8 +35,8 @@ export default function PrescriptionForm({ prescription, onSubmit, onCancel, isS
   const form = useForm<PrescriptionFormData>({
     resolver: zodResolver(prescriptionSchema),
     defaultValues: prescription ? {
-        ...prescription,
-        datePrescribed: new Date(prescription.datePrescribed),
+        ...prescription, // Spread Prisma object
+        datePrescribed: new Date(prescription.datePrescribed), // Convert ISO string to Date
     } : {
       medicationName: '',
       dosage: '',
@@ -44,8 +45,8 @@ export default function PrescriptionForm({ prescription, onSubmit, onCancel, isS
     },
   });
 
-  const handleFormSubmit: SubmitHandler<PrescriptionFormData> = (data) => {
-    onSubmit(data);
+  const handleFormSubmit: SubmitHandler<PrescriptionFormData> = async (data) => {
+    await onSubmit(data);
   };
 
   return (

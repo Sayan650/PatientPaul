@@ -1,7 +1,7 @@
 
 "use client";
 
-import type { Patient } from '@/lib/types';
+import type { Patient } from '@prisma/client'; // Use Prisma type for patient prop
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -11,43 +11,47 @@ import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
-const patientSchema = z.object({
+// Zod schema for form validation
+const patientFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   age: z.coerce.number().int().nonnegative("Age must be a non-negative number.").max(150, "Age seems too high."),
-  contactDetails: z.object({
-    phone: z.string().min(10, "Phone number must be at least 10 digits"),
-  }),
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
   sex: z.string().min(1, "Sex is required"),
   occu: z.string().min(1, "Occupation is required"),
   medicalHistory: z.string().optional(),
 });
 
-export type PatientFormData = z.infer<typeof patientSchema>;
+// Type for form data, derived from the Zod schema
+export type PatientFormData = z.infer<typeof patientFormSchema>;
 
 interface PatientFormProps {
-  patient?: Patient;
-  onSubmit: (data: PatientFormData) => void;
+  patient?: Patient; // Prop for editing existing patient
+  onSubmit: (data: PatientFormData) => Promise<void>; // onSubmit now likely calls a server action
   isSubmitting?: boolean;
 }
 
 export default function PatientForm({ patient, onSubmit, isSubmitting }: PatientFormProps) {
   const form = useForm<PatientFormData>({
-    resolver: zodResolver(patientSchema),
+    resolver: zodResolver(patientFormSchema),
     defaultValues: patient ? {
-      ...patient,
+      name: patient.name,
       age: patient.age,
+      phone: patient.phone,
+      sex: patient.sex,
+      occu: patient.occu,
+      medicalHistory: patient.medicalHistory || '',
     } : {
       name: '',
       age: 0,
-      contactDetails: { phone: '' },
+      phone: '',
       sex: '',
       occu: '',
       medicalHistory: '',
     },
   });
 
-  const handleFormSubmit: SubmitHandler<PatientFormData> = (data) => {
-    onSubmit(data);
+  const handleFormSubmit: SubmitHandler<PatientFormData> = async (data) => {
+    await onSubmit(data);
   };
 
   return (
@@ -82,9 +86,7 @@ export default function PatientForm({ patient, onSubmit, isSubmitting }: Patient
                 <FormItem>
                   <FormLabel>Age</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="e.g. 35" {...field}
-                      // onChange={event => field.onChange(+event.target.value)} // Ensure value is number
-                    />
+                    <Input type="number" placeholder="e.g. 35" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -93,7 +95,7 @@ export default function PatientForm({ patient, onSubmit, isSubmitting }: Patient
 
             <FormField
               control={form.control}
-              name="contactDetails.phone"
+              name="phone"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Phone Number</FormLabel>
@@ -156,4 +158,3 @@ export default function PatientForm({ patient, onSubmit, isSubmitting }: Patient
     </Card>
   );
 }
-

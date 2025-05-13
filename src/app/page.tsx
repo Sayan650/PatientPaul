@@ -1,8 +1,34 @@
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { PlusCircle, Users } from 'lucide-react';
+import { PlusCircle, Users, AlertTriangle } from 'lucide-react';
 import UpcomingAppointmentsWidget from '@/components/appointments/UpcomingAppointmentsWidget';
+import { Suspense } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
+
+
+function UpcomingAppointmentsWidgetSkeleton() {
+  return (
+    <div className="space-y-4 max-h-96 overflow-y-auto">
+      {[...Array(3)].map((_, i) => (
+        <Card key={i} className="shadow-sm">
+          <CardContent className="p-4">
+            <div className="flex justify-between items-start">
+              <div>
+                <Skeleton className="h-5 w-32 mb-1" />
+                <Skeleton className="h-4 w-48 mb-2" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+              <Skeleton className="h-8 w-24" />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
 
 export default function DashboardPage() {
   return (
@@ -39,7 +65,10 @@ export default function DashboardPage() {
             <CardDescription>Patients with appointments in the next 7 days.</CardDescription>
           </CardHeader>
           <CardContent>
-            <UpcomingAppointmentsWidget />
+            <Suspense fallback={<UpcomingAppointmentsWidgetSkeleton />}>
+              {/* @ts-expect-error Server Component */}
+              <UpcomingAppointmentsWidget />
+            </Suspense>
           </CardContent>
         </Card>
       </div>

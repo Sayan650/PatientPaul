@@ -1,32 +1,49 @@
-"use client";
 
 import PatientDetailView from '@/components/patients/PatientDetailView';
-import { usePatientStore } from '@/lib/store';
-import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import type { Patient } from '@/lib/types';
+import { getPatientById } from '@/lib/actions/patientActions';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, AlertTriangle } from 'lucide-react';
+import type { Patient, Prescription as PrismaPrescription, Appointment as PrismaAppointment } from '@prisma/client';
 
-export default function PatientDetailPage() {
-  const router = useRouter();
-  const params = useParams();
-  const patientId = params.patientId as string;
-  
-  const { getPatientById } = usePatientStore();
-  const [patient, setPatient] = useState<Patient | null | undefined>(undefined); // undefined for loading state
+// Define a more specific type for the patient prop passed to PatientDetailView, including relations
+export type PatientWithRelations = Patient & {
+  prescriptions: PrismaPrescription[];
+  appointments: PrismaAppointment[];
+};
 
-  useEffect(() => {
+interface PatientDetailPageProps {
+  params: { patientId: string };
+}
+
+export default async function PatientDetailPage({ params }: PatientDetailPageProps) {
+  const patientId = params.patientId;
+  let patient: PatientWithRelations | null = null;
+  let error: string | null = null;
+
+  try {
     if (patientId) {
-      const foundPatient = getPatientById(patientId);
-      setPatient(foundPatient || null); // null if not found after trying
+      // Type assertion is okay here if getPatientById is guaranteed to return this structure when successful
+      patient = await getPatientById(patientId) as PatientWithRelations | null;
     }
-  }, [patientId, getPatientById]);
-
-
-  if (patient === undefined) {
-    return <div className="container mx-auto py-8 text-center">Loading patient details...</div>;
+  } catch (e: any) {
+    console.error("Failed to fetch patient:", e);
+    error = e.message || "Could not load patient data.";
+  }
+  
+  if (error) {
+     return (
+      <div className="container mx-auto py-8 text-center">
+        <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-4" />
+        <h2 className="text-2xl font-semibold mb-4 text-destructive">Error Loading Patient</h2>
+        <p className="text-muted-foreground mb-6">{error}</p>
+        <Button asChild variant="outline">
+          <Link href="/patients">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Go Back to Patients List
+          </Link>
+        </Button>
+      </div>
+    );
   }
 
   if (!patient) {

@@ -1,6 +1,7 @@
+
 "use client";
 
-import type { Appointment } from '@/lib/types';
+import type { Appointment } from '@prisma/client'; // Use Prisma type
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -9,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar as CalendarIconLucide } from "lucide-react"; // Renamed to avoid conflict
+import { Calendar as CalendarIconLucide } from "lucide-react"; 
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -21,7 +22,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-
 const appointmentSchema = z.object({
   date: z.date({ required_error: "Appointment date is required." }),
   time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:MM)"),
@@ -32,8 +32,8 @@ const appointmentSchema = z.object({
 export type AppointmentFormData = z.infer<typeof appointmentSchema>;
 
 interface AppointmentFormProps {
-  appointment?: Appointment;
-  onSubmit: (data: AppointmentFormData) => void;
+  appointment?: Appointment; // Prisma type
+  onSubmit: (data: AppointmentFormData) => Promise<void>; // Expects to call a server action
   onCancel?: () => void;
   isSubmitting?: boolean;
 }
@@ -42,8 +42,8 @@ export default function AppointmentForm({ appointment, onSubmit, onCancel, isSub
   const form = useForm<AppointmentFormData>({
     resolver: zodResolver(appointmentSchema),
     defaultValues: appointment ? {
-        ...appointment,
-        date: new Date(appointment.date),
+        ...appointment, // Spread Prisma object
+        date: new Date(appointment.date), // Convert ISO string to Date
     } : {
       date: new Date(),
       time: '09:00',
@@ -52,8 +52,8 @@ export default function AppointmentForm({ appointment, onSubmit, onCancel, isSub
     },
   });
 
-  const handleFormSubmit: SubmitHandler<AppointmentFormData> = (data) => {
-    onSubmit(data);
+  const handleFormSubmit: SubmitHandler<AppointmentFormData> = async (data) => {
+    await onSubmit(data);
   };
 
   return (
@@ -89,7 +89,7 @@ export default function AppointmentForm({ appointment, onSubmit, onCancel, isSub
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
-                    disabled={(date) => date < new Date(new Date().setHours(0,0,0,0)) } // Disable past dates
+                    disabled={(date) => date < new Date(new Date().setHours(0,0,0,0)) } 
                     initialFocus
                   />
                 </PopoverContent>

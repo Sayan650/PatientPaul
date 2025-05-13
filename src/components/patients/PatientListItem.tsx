@@ -1,11 +1,11 @@
 
 "use client";
 
-import type { Patient } from '@/lib/types';
+import type { Patient } from '@prisma/client';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Phone, Mail, Trash2 } from 'lucide-react';
+import { User, Phone, Trash2 } from 'lucide-react'; // Mail icon removed
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,13 +17,41 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useToast } from '@/hooks/use-toast';
+import { deletePatientAction } from '@/lib/actions/patientActions';
+import { useRouter } from 'next/navigation';
+import { startTransition } from 'react';
+
 
 interface PatientListItemProps {
   patient: Patient;
-  onDelete: (patientId: string) => void;
 }
 
-export default function PatientListItem({ patient, onDelete }: PatientListItemProps) {
+export default function PatientListItem({ patient }: PatientListItemProps) {
+  const { toast } = useToast();
+  const router = useRouter();
+
+  const handleDelete = async () => {
+    const result = await deletePatientAction(patient.id);
+    if (result.success) {
+      toast({
+        title: "Patient Deleted",
+        description: `${patient.name} has been removed.`,
+      });
+      // Revalidation is handled by the server action, Next.js should refresh the data.
+      // Forcing a client-side refresh might be needed if revalidation is not immediate or for UX.
+      startTransition(() => {
+        router.refresh(); 
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: result.message || "Failed to delete patient.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Card className="shadow-md hover:shadow-lg transition-shadow">
       <CardHeader>
@@ -49,7 +77,7 @@ export default function PatientListItem({ patient, onDelete }: PatientListItemPr
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => onDelete(patient.id)} className="bg-destructive hover:bg-destructive/90">
+                <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
                   Delete
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -58,20 +86,13 @@ export default function PatientListItem({ patient, onDelete }: PatientListItemPr
         </div>
       </CardHeader>
       <CardContent className="space-y-2">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Mail className="h-4 w-4" />
-          <span>{patient.contactDetails.email}</span>
-        </div>
+        {/* Email display removed as it's not in the Prisma schema */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Phone className="h-4 w-4" />
-          <span>{patient.contactDetails.phone}</span>
+          <span>{patient.phone}</span>
         </div>
       </CardContent>
       <CardFooter className="flex justify-end gap-2">
-         {/* Edit button could navigate to an edit page or open a modal form */}
-         {/* <Link href={`/patients/${patient.id}/edit`} passHref>
-          <Button variant="outline" size="sm"><Edit3 className="mr-2 h-4 w-4" /> Edit</Button>
-        </Link> */}
         <Link href={`/patients/${patient.id}`} passHref>
           <Button variant="default" size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90">
             View Details
@@ -81,4 +102,3 @@ export default function PatientListItem({ patient, onDelete }: PatientListItemPr
     </Card>
   );
 }
-

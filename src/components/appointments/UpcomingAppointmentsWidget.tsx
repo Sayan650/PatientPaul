@@ -1,74 +1,54 @@
-"use client";
 
-import { usePatientStore } from '@/lib/store';
-import type { Patient, Appointment } from '@/lib/types';
 import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CalendarClock, User } from 'lucide-react';
-import { format, isWithinInterval, addDays, startOfDay } from 'date-fns';
-import { useEffect, useState } from 'react';
+import { CalendarClock, User, AlertTriangle } from 'lucide-react';
+import { format } from 'date-fns';
+import { getUpcomingAppointmentsForWidget } from '@/lib/actions/patientActions';
+import type { Appointment, Patient } from '@prisma/client';
 
 interface UpcomingAppointmentInfo {
   patientId: string;
   patientName: string;
-  appointment: Appointment;
+  appointment: Appointment; // Prisma Appointment type
 }
 
-export default function UpcomingAppointmentsWidget() {
-  const { patients, getPatients } = usePatientStore();
-  const [upcomingAppointments, setUpcomingAppointments] = useState<UpcomingAppointmentInfo[]>([]);
-  const [mounted, setMounted] = useState(false);
+export default async function UpcomingAppointmentsWidget() {
+  let upcomingAppointmentsInfo: UpcomingAppointmentInfo[] = [];
+  let error: string | null = null;
 
-  useEffect(() => {
-    setMounted(true);
-    // Ensure latest patient list is fetched or store is initialized
-    getPatients();
-  }, [getPatients]);
-
-  useEffect(() => {
-    if (patients.length > 0) {
-      const today = startOfDay(new Date());
-      const sevenDaysFromNow = addDays(today, 7);
-      
-      const allUpcoming: UpcomingAppointmentInfo[] = [];
-      patients.forEach(patient => {
-        patient.appointments.forEach(appointment => {
-          const appointmentDate = startOfDay(new Date(appointment.date));
-          if (appointment.status === 'upcoming' && isWithinInterval(appointmentDate, { start: today, end: sevenDaysFromNow })) {
-            allUpcoming.push({
-              patientId: patient.id,
-              patientName: patient.name,
-              appointment,
-            });
-          }
-        });
-      });
-      
-      // Sort by appointment date, then time
-      allUpcoming.sort((a, b) => {
-        const dateA = new Date(a.appointment.date).getTime();
-        const dateB = new Date(b.appointment.date).getTime();
-        if (dateA !== dateB) return dateA - dateB;
-        // Basic time sort (HH:MM)
-        return a.appointment.time.localeCompare(b.appointment.time);
-      });
-
-      setUpcomingAppointments(allUpcoming);
-    }
-  }, [patients]);
-
-  if (!mounted) {
-    return <p className="text-muted-foreground">Loading upcoming appointments...</p>;
+  try {
+    const rawAppointments = await getUpcomingAppointmentsForWidget();
+    // Transform rawAppointments to UpcomingAppointmentInfo structure
+    upcomingAppointmentsInfo = rawAppointments.map(app => ({
+      patientId: app.patient.id,
+      patientName: app.patient.name,
+      appointment: app,
+    }));
+  } catch (e: any) {
+    console.error("Error fetching upcoming appointments:", e);
+    error = e.message || "Failed to load upcoming appointments.";
   }
 
-  if (upcomingAppointments.length === 0) {
+  if (error) {
+    return (
+      <div className="text-destructive-foreground bg-destructive/80 p-4 rounded-md flex items-center gap-3">
+        <AlertTriangle className="h-6 w-6" />
+        <div>
+            <p className="font-semibold">Could not load appointments</p>
+            <p className="text-sm">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (upcomingAppointmentsInfo.length === 0) {
     return <p className="text-muted-foreground">No upcoming appointments in the next 7 days.</p>;
   }
 
   return (
     <div className="space-y-4 max-h-96 overflow-y-auto">
-      {upcomingAppointments.map(info => (
+      {upcomingAppointmentsInfo.map(info => (
         <Card key={info.appointment.id} className="shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-4">
             <div className="flex justify-between items-start">

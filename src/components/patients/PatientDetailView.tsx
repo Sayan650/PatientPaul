@@ -1,10 +1,10 @@
 
 "use client";
 
-import type { Patient, Prescription, Appointment } from '@/lib/types';
-import { usePatientStore } from '@/lib/store';
+import type { PatientWithRelations } from '@/app/patients/[patientId]/page'; // Use the specific type from the page
 import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
+import { useState, startTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -12,69 +12,120 @@ import PrescriptionForm, { type PrescriptionFormData } from '@/components/prescr
 import PrescriptionListItem from '@/components/prescriptions/PrescriptionListItem';
 import AppointmentForm, { type AppointmentFormData } from '@/components/appointments/AppointmentForm';
 import AppointmentListItem from '@/components/appointments/AppointmentListItem';
-import { User, Phone, Mail, BookDashed, ClipboardList, CalendarPlus, PlusCircle, Baby } from 'lucide-react';
+import { User, Phone, BookDashed, ClipboardList, CalendarPlus, PlusCircle, Baby } from 'lucide-react';
 import { format } from 'date-fns';
+import { 
+  addPrescriptionAction, 
+  deletePrescriptionAction, 
+  addAppointmentAction, 
+  deleteAppointmentAction 
+} from '@/lib/actions/patientActions';
 
 interface PatientDetailViewProps {
-  patient: Patient;
+  patient: PatientWithRelations;
 }
 
 export default function PatientDetailView({ patient: initialPatient }: PatientDetailViewProps) {
-  const { getPatientById, addPrescription, addAppointment, deletePrescription, deleteAppointment } = usePatientStore();
-  const patient = getPatientById(initialPatient.id) || initialPatient;
-  
+  const router = useRouter();
   const { toast } = useToast();
+  
+  // Component state for patient data, initialized from props.
+  // This allows UI to update optimistically or based on server action results if needed,
+  // though primary refresh comes from revalidatePath.
+  const [patient, setPatient] = useState(initialPatient);
+
   const [isPrescriptionFormOpen, setIsPrescriptionFormOpen] = useState(false);
   const [isAppointmentFormOpen, setIsAppointmentFormOpen] = useState(false);
   const [isSubmittingPrescription, setIsSubmittingPrescription] = useState(false);
   const [isSubmittingAppointment, setIsSubmittingAppointment] = useState(false);
 
-  const handleAddPrescription = (data: PrescriptionFormData) => {
+  const handleAddPrescription = async (data: PrescriptionFormData) => {
     setIsSubmittingPrescription(true);
-    const prescriptionDataForStore = {
-        ...data,
-        datePrescribed: data.datePrescribed.toISOString(),
-    };
-    addPrescription(patient.id, prescriptionDataForStore);
-    toast({
-      title: 'Prescription Added',
-      description: `${data.medicationName} has been added to ${patient.name}'s prescriptions.`,
-    });
-    setIsPrescriptionFormOpen(false);
+    const result = await addPrescriptionAction(patient.id, data);
     setIsSubmittingPrescription(false);
+
+    if (result.success && result.prescription) {
+      toast({
+        title: 'Prescription Added',
+        description: `${result.prescription.medicationName} has been added.`,
+      });
+      setIsPrescriptionFormOpen(false);
+      // Optimistically update client state or rely on router.refresh() / revalidatePath
+      // For simplicity, we rely on revalidatePath from the server action.
+      // A manual refresh can ensure immediate UI update.
+      startTransition(() => router.refresh());
+    } else {
+      toast({
+        title: 'Error Adding Prescription',
+        description: result.message || "Failed to add prescription.",
+        variant: 'destructive',
+      });
+    }
   };
 
-  const handleAddAppointment = (data: AppointmentFormData) => {
+  const handleAddAppointment = async (data: AppointmentFormData) => {
     setIsSubmittingAppointment(true);
-    const appointmentDataForStore = {
-        ...data,
-        date: data.date.toISOString(),
-    };
-    addAppointment(patient.id, appointmentDataForStore);
-    toast({
-      title: 'Appointment Scheduled',
-      description: `Appointment for ${patient.name} on ${format(data.date, 'MMMM d, yyyy')} has been scheduled.`,
-    });
-    setIsAppointmentFormOpen(false);
+    const result = await addAppointmentAction(patient.id, data);
     setIsSubmittingAppointment(false);
+
+    if (result.success && result.appointment) {
+      toast({
+        title: 'Appointment Scheduled',
+        description: `Appointment for ${patient.name} on ${format(new Date(result.appointment.date), 'MMMM d, yyyy')} scheduled.`,
+      });
+      setIsAppointmentFormOpen(false);
+      startTransition(() => router.refresh());
+    } else {
+      toast({
+        title: 'Error Scheduling Appointment',
+        description: result.message || "Failed to schedule appointment.",
+        variant: 'destructive',
+      });
+    }
   };
   
-  const handleDeletePrescription = (prescriptionId: string) => {
+  const handleDeletePrescription = async (prescriptionId: string) => {
     const prescription = patient.prescriptions.find(p => p.id === prescriptionId);
-    deletePrescription(patient.id, prescriptionId);
-    toast({
-      title: "Prescription Deleted",
-      description: `Prescription for ${prescription?.medicationName || 'medication'} has been removed.`,
-    });
+    const result = await deletePrescriptionAction(patient.id, prescriptionId);
+    
+    if (result.success) {
+      toast({
+        title: "Prescription Deleted",
+        description: `Prescription for ${prescription?.medicationName || 'medication'} removed.`,
+      });
+      startTransition(() => router.refresh());
+    } else {
+       toast({
+        title: "Error Deleting Prescription",
+        description: result.message || "Failed to delete prescription.",
+        variant: 'destructive',
+      });
+    }
   };
 
-  const handleDeleteAppointment = (appointmentId: string) => {
-    deleteAppointment(patient.id, appointmentId);
-    toast({
-      title: "Appointment Deleted",
-      description: `The appointment has been removed.`,
-    });
+  const handleDeleteAppointment = async (appointmentId: string) => {
+    const result = await deleteAppointmentAction(patient.id, appointmentId);
+    if (result.success) {
+      toast({
+        title: "Appointment Deleted",
+        description: `The appointment has been removed.`,
+      });
+      startTransition(() => router.refresh());
+    } else {
+      toast({
+        title: "Error Deleting Appointment",
+        description: result.message || "Failed to delete appointment.",
+        variant: 'destructive',
+      });
+    }
   };
+  
+  // If initialPatient data changes due to router.refresh(), update local state
+  if (initialPatient.id !== patient.id || 
+      initialPatient.updatedAt.getTime() !== new Date(patient.updatedAt).getTime() ) {
+    setPatient(initialPatient);
+  }
+
 
   return (
     <div className="space-y-8">
@@ -85,23 +136,15 @@ export default function PatientDetailView({ patient: initialPatient }: PatientDe
               <User className="h-8 w-8 text-primary" />
               {patient.name}
             </CardTitle>
-            {/* Edit Patient Button - Placeholder for future functionality */}
-            {/* <Link href={`/patients/${patient.id}/edit`} passHref>
-              <Button variant="outline" size="icon"><Edit className="h-5 w-5" /></Button>
-            </Link> */}
           </div>
           <CardDescription className="text-md">
             {patient.age} years old
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          {/* <div className="flex items-center gap-2 text-muted-foreground">
-            <Mail className="h-5 w-5" />
-            <span>{patient.contactDetails.email}</span>
-          </div> */}
           <div className="flex items-center gap-2 text-muted-foreground">
             <Phone className="h-5 w-5" />
-            <span>{patient.contactDetails.phone}</span>
+            <span>{patient.phone}</span>
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Baby className="h-5 w-5" />
