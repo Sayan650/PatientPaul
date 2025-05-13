@@ -18,6 +18,19 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {
+    serverComponentsExternalPackages: ['@prisma/client', 'bcrypt'],
+    serverActions: {
+      allowedOrigins: ['localhost:3000', 'patientpaul.vercel.app'],
+    },
+  },
+  webpack: (config) => {
+    config.experiments = { ...config.experiments, topLevelAwait: true };
+    return config;
+  },
+  env: {
+    NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000',
+  },
 };
 
 export default nextConfig;

@@ -66,7 +66,6 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <Suspense fallback={<UpcomingAppointmentsWidgetSkeleton />}>
-              {/* @ts-expect-error Server Component */}
               <UpcomingAppointmentsWidget />
             </Suspense>
           </CardContent>

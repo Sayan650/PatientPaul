@@ -1,12 +1,12 @@
-
-import { useState, useEffect, Suspense } from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import PatientListItem from '@/components/patients/PatientListItem';
-import { PlusCircle, Users, AlertTriangle } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { getPatients } from '@/lib/actions/patientActions';
-import type { Patient } from '@prisma/client'; // Use Prisma generated type
+"use client";
+import { useState, useEffect, Suspense } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import PatientListItem from "@/components/patients/PatientListItem";
+import { PlusCircle, Users, AlertTriangle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { getPatients } from "@/lib/actions/patientActions";
+import type { Patient } from "@prisma/client"; // Use Prisma generated type
 
 async function PatientsList() {
   // This component will be streamed
@@ -15,8 +15,9 @@ async function PatientsList() {
   // Client-side state for filtering
   // To make search fully server-side, you'd use URL searchParams and re-fetch
   // For simplicity, keeping client-side search for now based on initial full list
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredPatients, setFilteredPatients] = useState<Patient[]>(initialPatients);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredPatients, setFilteredPatients] =
+    useState<Patient[]>(initialPatients);
   const [patients, setPatients] = useState<Patient[]>(initialPatients); // To store the full list for re-filtering
 
   useEffect(() => {
@@ -25,13 +26,13 @@ async function PatientsList() {
   }, [initialPatients]);
 
   useEffect(() => {
-    if (searchTerm === '') {
+    if (searchTerm === "") {
       setFilteredPatients(patients);
     } else {
       setFilteredPatients(
-        patients.filter(patient =>
-          patient.name.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+        patients.filter((patient) =>
+          patient.name.toLowerCase().includes(searchTerm.toLowerCase()),
+        ),
       );
     }
   }, [searchTerm, patients]);
@@ -46,7 +47,7 @@ async function PatientsList() {
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
   };
-  
+
   return (
     <>
       <div className="mb-6">
@@ -68,13 +69,16 @@ async function PatientsList() {
       ) : (
         <div className="text-center py-10">
           <p className="text-muted-foreground text-lg">No patients found.</p>
-          {searchTerm && <p className="text-sm text-muted-foreground">Try adjusting your search term.</p>}
+          {searchTerm && (
+            <p className="text-sm text-muted-foreground">
+              Try adjusting your search term.
+            </p>
+          )}
         </div>
       )}
     </>
   );
 }
-
 
 export default function PatientsListPage() {
   // This outer component can set up layout and suspense boundaries
@@ -91,7 +95,6 @@ export default function PatientsListPage() {
         </Link>
       </div>
       <Suspense fallback={<PatientsListSkeleton />}>
-        {/* @ts-expect-error Server Component */}
         <PatientsListClientWrapper />
       </Suspense>
     </div>
@@ -100,7 +103,7 @@ export default function PatientsListPage() {
 
 // Client Wrapper to handle state for search if needed, or just render the server component
 function PatientsListClientWrapper() {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [clientPatients, setClientPatients] = useState<Patient[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -115,7 +118,7 @@ function PatientsListClientWrapper() {
         const fetchedPatients = await getPatients(); // This is a server action
         setClientPatients(fetchedPatients);
       } catch (e) {
-        setError('Failed to load patients.');
+        setError("Failed to load patients.");
         console.error(e);
       } finally {
         setIsLoading(false);
@@ -124,8 +127,8 @@ function PatientsListClientWrapper() {
     fetchData();
   }, []); // Empty dependency: fetch once on mount. Revalidation will handle updates.
 
-  const filteredPatients = clientPatients.filter(patient =>
-    patient.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredPatients = clientPatients.filter((patient) =>
+    patient.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   if (isLoading) {
@@ -163,13 +166,16 @@ function PatientsListClientWrapper() {
       ) : (
         <div className="text-center py-10">
           <p className="text-muted-foreground text-lg">No patients found.</p>
-          {searchTerm && <p className="text-sm text-muted-foreground">Try adjusting your search term.</p>}
+          {searchTerm && (
+            <p className="text-sm text-muted-foreground">
+              Try adjusting your search term.
+            </p>
+          )}
         </div>
       )}
     </>
   );
 }
-
 
 function PatientsListSkeleton() {
   return (
@@ -199,5 +205,10 @@ function PatientsListSkeleton() {
 }
 
 // To satisfy Suspense, these skeleton related components would also be needed:
-import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
