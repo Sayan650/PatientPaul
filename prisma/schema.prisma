@@ -1,6 +1,9 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native"] // Ensures compatibility with system's OpenSSL
 }
 
 datasource db {
@@ -9,39 +12,39 @@ datasource db {
 }
 
 model Patient {
-  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
   name            String
   age             Int
+  phone           String
   sex             String
   occu            String
-  phone           String
   medicalHistory  String?
   prescriptions   Prescription[]
   appointments    Appointment[]
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 }
 
 model Prescription {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  patientId       String   @db.ObjectId
+  patient         Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
   medicationName  String
   dosage          String
   instructions    String
   datePrescribed  DateTime
-  patient         Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  patientId       String   @db.ObjectId
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
 
 model Appointment {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  date      DateTime
-  time      String
-  reason    String
-  status    String   // e.g., "upcoming", "completed", "cancelled"
-  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  patientId String   @db.ObjectId
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  patientId  String   @db.ObjectId
+  patient    Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  date       DateTime
+  time       String
+  reason     String
+  status     String   @default("upcoming") // e.g., upcoming, completed, cancelled
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
