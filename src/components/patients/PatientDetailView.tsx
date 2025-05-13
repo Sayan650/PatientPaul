@@ -12,7 +12,7 @@ import PrescriptionForm, { type PrescriptionFormData } from '@/components/prescr
 import PrescriptionListItem from '@/components/prescriptions/PrescriptionListItem';
 import AppointmentForm, { type AppointmentFormData } from '@/components/appointments/AppointmentForm';
 import AppointmentListItem from '@/components/appointments/AppointmentListItem';
-import { User, Phone, Mail, ClipboardList, CalendarPlus, PlusCircle } from 'lucide-react';
+import { User, Phone, Mail, BookDashed, ClipboardList, CalendarPlus, PlusCircle, Baby } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface PatientDetailViewProps {
@@ -95,13 +95,21 @@ export default function PatientDetailView({ patient: initialPatient }: PatientDe
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex items-center gap-2 text-muted-foreground">
+          {/* <div className="flex items-center gap-2 text-muted-foreground">
             <Mail className="h-5 w-5" />
             <span>{patient.contactDetails.email}</span>
-          </div>
+          </div> */}
           <div className="flex items-center gap-2 text-muted-foreground">
             <Phone className="h-5 w-5" />
             <span>{patient.contactDetails.phone}</span>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Baby className="h-5 w-5" />
+            <span>{patient.sex}</span>
+          </div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <BookDashed className="h-5 w-5" />
+            <span>{patient.occu}</span>
           </div>
           <div>
             <h4 className="font-semibold text-foreground mt-2 mb-1">Medical History:</h4>

@@ -19,9 +19,11 @@ export interface Patient {
   id: string;
   name: string;
   age: number; 
+  sex: string;
+  occu: string;
   contactDetails: {
     phone: string;
-    email: string;
+    // email: string;
   };
   medicalHistory: string;
   prescriptions: Prescription[];
