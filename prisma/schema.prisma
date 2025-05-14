@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model patient {
+  id             Int            @id @default(autoincrement())
+  name           String
+  age            Int
+  phone          String
+  sex            String
+  occu           String
+  medicalHistory String?
+  prescriptions  prescription[]
+  appointments   appointment[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([name])
+  @@index([phone])
+}
+
+model prescription {
+  id             Int      @id @default(autoincrement())
+  patientId      Int
+  patient        patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  medicationName String
+  dosage         String
+  instructions   String
+  datePrescribed DateTime
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([patientId])
+  @@index([datePrescribed])
+}
+
+model appointment {
+  id        Int      @id @default(autoincrement())
+  patientId Int
+  patient   patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  date      DateTime
+  time      String
+  reason    String
+  status    String   @default("upcoming") // e.g., upcoming, completed, cancelled
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([patientId])
+  @@index([date])
+  @@index([status])
+}
